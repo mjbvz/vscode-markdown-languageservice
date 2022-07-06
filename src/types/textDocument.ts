@@ -8,7 +8,7 @@ import { IRange, makeRange } from './range';
 import { IUri } from './uri';
 
 /**
- * Minimal version of {@link vscode.TextDocument}.
+ * Minimal version of `vscode.TextDocument`.
  */
 export interface ITextDocument {
 	readonly uri: IUri;

@@ -11,19 +11,19 @@ import { MdTableOfContentsProvider } from './tableOfContents';
 import { ITextDocument } from './types/textDocument';
 import { IMdWorkspace } from './workspace';
 
-// Types
+// Common
 export * from './parser';
 export * from './slugify';
 export * from './tableOfContents';
 export * from './workspace';
 export * from './logging';
 
-// Common
-export * from './types/location';
-export * from './types/position';
-export * from './types/range';
-export * from './types/textDocument';
-export * from './types/uri';
+// Types
+export { ILocation } from './types/location';
+export { IPosition } from './types/position';
+export { IRange } from './types/range';
+export { ITextDocument } from './types/textDocument';
+export { IUri } from './types/uri';
 
 
 // Language service
@@ -36,9 +36,9 @@ export function createLanguageService(workspace: IMdWorkspace, parser: IMdParser
 	const tocProvider = new MdTableOfContentsProvider(parser, workspace, logger);
 	const docSymbolProvider = new MdDocumentSymbolProvider(tocProvider, logger);
 
-	return {
+	return Object.freeze<IMdLanguageService>({
 		provideDocumentSymbols(document) {
 			return docSymbolProvider.provideDocumentSymbols(document);
 		},
-	};
+	});
 }
