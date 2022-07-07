@@ -5,7 +5,7 @@
 
 import { ILogger } from './logging';
 import { IMdParser } from './parser';
-import { githubSlugifier, Slug, Slugifier } from './slugify';
+import { githubSlugifier, Slug, ISlugifier } from './slugify';
 import { ILocation, makeLocation } from './types/location';
 import { makePosition } from './types/position';
 import { makeRange } from './types/range';
@@ -150,7 +150,7 @@ export class TableOfContents {
 
 	private constructor(
 		public readonly entries: readonly TocEntry[],
-		private readonly slugifier: Slugifier,
+		private readonly slugifier: ISlugifier,
 	) { }
 
 	public lookup(fragment: string): TocEntry | undefined {

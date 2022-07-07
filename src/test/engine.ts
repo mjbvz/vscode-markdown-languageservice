@@ -11,7 +11,9 @@ export function createNewMarkdownEngine(): IMdParser {
 	return {
 		slugifier: githubSlugifier,
 		async tokenize(document) {
-			const md: MarkdownIt = MarkdownIt({});
+			const md: MarkdownIt = MarkdownIt({
+				html: true,
+			});
 			return md.parse(document.getText(), {});
 		},
 	};

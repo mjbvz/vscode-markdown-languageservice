@@ -6,6 +6,8 @@
 import * as assert from 'assert';
 import * as os from 'os';
 import * as URI from 'vscode-uri';
+import { InMemoryDocument } from '../inMemoryDocument';
+import { IPosition } from '../types/position';
 import { IRange } from '../types/range';
 import { IUri } from '../types/uri';
 import { DisposableStore } from '../util/dispose';
@@ -33,4 +35,21 @@ export function withStore<R>(fn: (this: Mocha.Context, store: DisposableStore) =
 			store.dispose();
 		}
 	};
+}
+
+
+export const CURSOR = '$$CURSOR$$';
+
+export function getCursorPositions(contents: string, doc: InMemoryDocument): IPosition[] {
+	const positions: IPosition[] = [];
+	let index = 0;
+	let wordLength = 0;
+	while (index !== -1) {
+		index = contents.indexOf(CURSOR, index + wordLength);
+		if (index !== -1) {
+			positions.push(doc.positionAt(index));
+		}
+		wordLength = CURSOR.length;
+	}
+	return positions;
 }

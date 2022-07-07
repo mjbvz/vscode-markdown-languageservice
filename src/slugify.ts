@@ -13,11 +13,11 @@ export class Slug {
 	}
 }
 
-export interface Slugifier {
+export interface ISlugifier {
 	fromHeading(heading: string): Slug;
 }
 
-export const githubSlugifier: Slugifier = new class implements Slugifier {
+export const githubSlugifier: ISlugifier = new class implements ISlugifier {
 	fromHeading(heading: string): Slug {
 		const slugifiedHeading = encodeURI(
 			heading.trim()

@@ -16,7 +16,8 @@ export class InMemoryDocument implements ITextDocument {
 	private lines: string[] | undefined;
 
 	constructor(
-		public readonly uri: IUri, contents: string,
+		public readonly uri: IUri,
+		contents: string,
 		public readonly version = 0,
 	) {
 
