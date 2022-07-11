@@ -10,14 +10,14 @@ import { MdDocumentSymbolProvider } from '../languageFeatures/documentSymbols';
 import { MdTableOfContentsProvider } from '../tableOfContents';
 import { DisposableStore } from '../util/dispose';
 import { createNewMarkdownEngine } from './engine';
-import { InMemoryMdWorkspace } from './inMemoryWorkspace';
+import { InMemoryWorkspace } from './inMemoryWorkspace';
 import { nulLogger } from './nulLogging';
 import { joinLines, withStore, workspacePath } from './util';
 
 
 function getSymbolsForFile(store: DisposableStore, fileContents: string) {
 	const doc = new InMemoryDocument(workspacePath('test.md'), fileContents);
-	const workspace = store.add(new InMemoryMdWorkspace([doc]));
+	const workspace = store.add(new InMemoryWorkspace([doc]));
 	const engine = createNewMarkdownEngine();
 	const tocProvider = store.add(new MdTableOfContentsProvider(engine, workspace, nulLogger));
 	const provider = new MdDocumentSymbolProvider(tocProvider, nulLogger);

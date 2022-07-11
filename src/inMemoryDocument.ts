@@ -15,11 +15,14 @@ export class InMemoryDocument implements ITextDocument {
 
 	private lines: string[] | undefined;
 
+	public readonly uri: string;
+
 	constructor(
-		public readonly uri: IUri,
+		uri: IUri,
 		contents: string,
 		public readonly version = 0,
 	) {
+		this.uri = uri.toString();
 
 		this._doc = TextDocument.create(uri.toString(), 'markdown', version, contents);
 	}

@@ -3,12 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { URI } from 'vscode-uri';
 import { ITextDocument } from './types/textDocument';
 import { IUri } from './types/uri';
 import { Disposable } from './util/dispose';
 import { lazy, Lazy } from './util/lazy';
 import { ResourceMap } from './util/resourceMap';
-import { IMdWorkspace } from './workspace';
+import { IWorkspace } from './workspace';
 
 
 class LazyResourceMap<T> {
@@ -48,7 +49,7 @@ export class MdDocumentInfoCache<T> extends Disposable {
 	private readonly _loadingDocuments = new ResourceMap<Promise<ITextDocument | undefined>>();
 
 	public constructor(
-		private readonly workspace: IMdWorkspace,
+		private readonly workspace: IWorkspace,
 		private readonly getValue: (document: ITextDocument) => Promise<T>,
 	) {
 		super();
@@ -78,7 +79,7 @@ export class MdDocumentInfoCache<T> extends Disposable {
 	}
 
 	public async getForDocument(document: ITextDocument): Promise<T> {
-		const existing = this._cache.get(document.uri);
+		const existing = this._cache.get(URI.parse(document.uri));
 		if (existing) {
 			return existing;
 		}
@@ -101,12 +102,12 @@ export class MdDocumentInfoCache<T> extends Disposable {
 
 	private resetEntry(document: ITextDocument): Lazy<Promise<T>> {
 		const value = lazy(() => this.getValue(document));
-		this._cache.set(document.uri, value);
+		this._cache.set(URI.parse(document.uri), value);
 		return value;
 	}
 
 	private invalidate(document: ITextDocument): void {
-		if (this._cache.has(document.uri)) {
+		if (this._cache.has(URI.parse(document.uri))) {
 			this.resetEntry(document);
 		}
 	}
@@ -128,7 +129,7 @@ export class MdWorkspaceInfoCache<T> extends Disposable {
 	private _init?: Promise<void>;
 
 	public constructor(
-		private readonly workspace: IMdWorkspace,
+		private readonly workspace: IWorkspace,
 		private readonly getValue: (document: ITextDocument) => Promise<T>,
 	) {
 		super();
@@ -146,12 +147,12 @@ export class MdWorkspaceInfoCache<T> extends Disposable {
 
 	public async getForDocs(docs: readonly ITextDocument[]): Promise<T[]> {
 		for (const doc of docs) {
-			if (!this._cache.has(doc.uri)) {
+			if (!this._cache.has(URI.parse(doc.uri))) {
 				this.update(doc);
 			}
 		}
 
-		return Promise.all(docs.map(doc => this._cache.get(doc.uri) as Promise<T>));
+		return Promise.all(docs.map(doc => this._cache.get(URI.parse(doc.uri)) as Promise<T>));
 	}
 
 	private async ensureInit(): Promise<void> {
@@ -168,14 +169,14 @@ export class MdWorkspaceInfoCache<T> extends Disposable {
 	private async populateCache(): Promise<void> {
 		const markdownDocumentUris = await this.workspace.getAllMarkdownDocuments();
 		for (const document of markdownDocumentUris) {
-			if (!this._cache.has(document.uri)) {
+			if (!this._cache.has(URI.parse(document.uri))) {
 				this.update(document);
 			}
 		}
 	}
 
 	private update(document: ITextDocument): void {
-		this._cache.set(document.uri, lazy(() => this.getValue(document)));
+		this._cache.set(URI.parse(document.uri), lazy(() => this.getValue(document)));
 	}
 
 	private onDidChangeDocument(document: ITextDocument) {

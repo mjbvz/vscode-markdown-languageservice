@@ -12,18 +12,13 @@ import { ILogger } from './logging';
 import { IMdParser } from './parser';
 import { MdTableOfContentsProvider } from './tableOfContents';
 import { ITextDocument } from './types/textDocument';
-import { IMdWorkspace } from './workspace';
+import { IWorkspace } from './workspace';
 
 export { ILogger } from './logging';
 export { IMdParser, Token } from './parser';
 export { githubSlugifier, ISlugifier } from './slugify';
-export { ILocation } from './types/location';
-export { IPosition } from './types/position';
-export { IRange } from './types/range';
 export { ITextDocument } from './types/textDocument';
-export { IUri } from './types/uri';
-export { IMdWorkspace } from './workspace';
-
+export { IWorkspace as IMdWorkspace } from './workspace';
 
 
 // Language service
@@ -36,7 +31,7 @@ export interface IMdLanguageService {
 	provideSelectionRanges(document: ITextDocument, positions: lsp.Position[], token: CancellationToken): Promise<lsp.SelectionRange[] | undefined>;
 }
 
-export function createLanguageService(workspace: IMdWorkspace, parser: IMdParser, logger: ILogger): IMdLanguageService {
+export function createLanguageService(workspace: IWorkspace, parser: IMdParser, logger: ILogger): IMdLanguageService {
 	const tocProvider = new MdTableOfContentsProvider(parser, workspace, logger);
 	const docSymbolProvider = new MdDocumentSymbolProvider(tocProvider, logger);
 	const smartSelectProvider = new MdSelectionRangeProvider(parser, tocProvider, logger);

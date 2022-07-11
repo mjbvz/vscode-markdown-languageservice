@@ -5,13 +5,12 @@
 
 import { IPosition } from './position';
 import { IRange, makeRange } from './range';
-import { IUri } from './uri';
 
 /**
  * Minimal version of `vscode.TextDocument`.
  */
 export interface ITextDocument {
-	readonly uri: IUri;
+	readonly uri: string;
 	readonly version: number;
 	readonly lineCount: number;
 

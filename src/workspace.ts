@@ -10,7 +10,7 @@ import { IUri } from './types/uri';
 /**
  * Provides set of markdown files in the current workspace.
  */
-export interface IMdWorkspace {
+export interface IWorkspace {
 	/**
 	 * Get list of all known markdown files.
 	 */

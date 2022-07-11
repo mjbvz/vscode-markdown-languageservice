@@ -3,16 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { URI } from 'vscode-uri';
 import { ILogger } from './logging';
 import { IMdParser } from './parser';
-import { githubSlugifier, Slug, ISlugifier } from './slugify';
+import { githubSlugifier, ISlugifier, Slug } from './slugify';
 import { ILocation, makeLocation } from './types/location';
 import { makePosition } from './types/position';
 import { makeRange } from './types/range';
 import { getLine, ITextDocument } from './types/textDocument';
 import { IUri } from './types/uri';
 import { Disposable } from './util/dispose';
-import { IMdWorkspace } from './workspace';
+import { IWorkspace } from './workspace';
 import { MdDocumentInfoCache } from './workspaceCache';
 
 export interface TocEntry {
@@ -73,6 +74,8 @@ export class TableOfContents {
 	}
 
 	private static async buildToc(parser: IMdParser, document: ITextDocument): Promise<TocEntry[]> {
+		const docUri = URI.parse(document.uri);
+
 		const toc: TocEntry[] = [];
 		const tokens = await parser.tokenize(document);
 
@@ -95,10 +98,10 @@ export class TableOfContents {
 				existingSlugEntries.set(slug.value, { count: 0 });
 			}
 
-			const headerLocation = makeLocation(document.uri,
+			const headerLocation = makeLocation(docUri,
 				makeRange(lineNumber, 0, lineNumber, line.length));
 
-			const headerTextLocation = makeLocation(document.uri,
+			const headerTextLocation = makeLocation(docUri,
 				makeRange(lineNumber, line.match(/^#+\s*/)?.[0].length ?? 0, lineNumber, line.length - (line.match(/\s*#*$/)?.[0].length ?? 0)));
 
 			toc.push({
@@ -124,7 +127,7 @@ export class TableOfContents {
 			const endLine = end ?? document.lineCount - 1;
 			return {
 				...entry,
-				sectionLocation: makeLocation(document.uri,
+				sectionLocation: makeLocation(docUri,
 					makeRange(
 						entry.sectionLocation.range.start,
 						makePosition(endLine, getLine(document, endLine).length)))
@@ -166,7 +169,7 @@ export class MdTableOfContentsProvider extends Disposable {
 
 	constructor(
 		parser: IMdParser,
-		workspace: IMdWorkspace,
+		workspace: IWorkspace,
 		private readonly logger: ILogger,
 	) {
 		super();

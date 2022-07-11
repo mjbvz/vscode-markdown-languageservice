@@ -12,7 +12,7 @@ import { MdSelectionRangeProvider } from '../languageFeatures/smartSelect';
 import { MdTableOfContentsProvider } from '../tableOfContents';
 import { IPosition, makePosition } from '../types/position';
 import { createNewMarkdownEngine } from './engine';
-import { InMemoryMdWorkspace } from './inMemoryWorkspace';
+import { InMemoryWorkspace } from './inMemoryWorkspace';
 import { nulLogger } from './nulLogging';
 import { CURSOR, getCursorPositions, joinLines } from './util';
 
@@ -726,7 +726,7 @@ function assertLineNumbersEqual(selectionRange: lsp.SelectionRange, startLine: n
 
 function getSelectionRangesForDocument(contents: string, pos?: IPosition[]): Promise<lsp.SelectionRange[] | undefined> {
 	const doc = new InMemoryDocument(testFileName, contents);
-	const workspace = new InMemoryMdWorkspace([doc]);
+	const workspace = new InMemoryWorkspace([doc]);
 	const engine = createNewMarkdownEngine();
 	const provider = new MdSelectionRangeProvider(engine, new MdTableOfContentsProvider(engine, workspace, nulLogger), nulLogger);
 	const positions = pos ? pos : getCursorPositions(contents, doc);

@@ -11,7 +11,7 @@ import { MdFoldingProvider } from '../languageFeatures/folding';
 import { MdTableOfContentsProvider } from '../tableOfContents';
 import { DisposableStore } from '../util/dispose';
 import { createNewMarkdownEngine } from './engine';
-import { InMemoryMdWorkspace } from './inMemoryWorkspace';
+import { InMemoryWorkspace } from './inMemoryWorkspace';
 import { nulLogger } from './nulLogging';
 import { joinLines, withStore } from './util';
 import * as lsp from 'vscode-languageserver-types';
@@ -21,7 +21,7 @@ const testFileName = URI.file('test.md');
 
 async function getFoldsForDocument(store: DisposableStore, contents: string) {
 	const doc = new InMemoryDocument(testFileName, contents);
-	const workspace = store.add(new InMemoryMdWorkspace([doc]));
+	const workspace = store.add(new InMemoryWorkspace([doc]));
 	const engine = createNewMarkdownEngine();
 	const tocProvider = store.add(new MdTableOfContentsProvider(engine, workspace, nulLogger));
 	const provider = new MdFoldingProvider(engine, tocProvider, nulLogger);
