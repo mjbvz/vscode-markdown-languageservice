@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IUri } from '../types/uri';
+import { URI } from 'vscode-uri';
 
 
-type ResourceToKey = (uri: IUri) => string;
+type ResourceToKey = (uri: URI) => string;
 
-const defaultResourceToKey = (resource: IUri): string => resource.toString();
+const defaultResourceToKey = (resource: URI): string => resource.toString();
 
 export class ResourceMap<T> {
 
-	private readonly map = new Map<string, { readonly uri: IUri; readonly value: T }>();
+	private readonly map = new Map<string, { readonly uri: URI; readonly value: T }>();
 
 	private readonly toKey: ResourceToKey;
 
@@ -20,16 +20,16 @@ export class ResourceMap<T> {
 		this.toKey = toKey;
 	}
 
-	public set(uri: IUri, value: T): this {
+	public set(uri: URI, value: T): this {
 		this.map.set(this.toKey(uri), { uri, value });
 		return this;
 	}
 
-	public get(resource: IUri): T | undefined {
+	public get(resource: URI): T | undefined {
 		return this.map.get(this.toKey(resource))?.value;
 	}
 
-	public has(resource: IUri): boolean {
+	public has(resource: URI): boolean {
 		return this.map.has(this.toKey(resource));
 	}
 
@@ -41,7 +41,7 @@ export class ResourceMap<T> {
 		this.map.clear();
 	}
 
-	public delete(resource: IUri): boolean {
+	public delete(resource: URI): boolean {
 		return this.map.delete(this.toKey(resource));
 	}
 
@@ -51,19 +51,19 @@ export class ResourceMap<T> {
 		}
 	}
 
-	public *keys(): IterableIterator<IUri> {
+	public *keys(): IterableIterator<URI> {
 		for (const entry of this.map.values()) {
 			yield entry.uri;
 		}
 	}
 
-	public *entries(): IterableIterator<[IUri, T]> {
+	public *entries(): IterableIterator<[URI, T]> {
 		for (const entry of this.map.values()) {
 			yield [entry.uri, entry.value];
 		}
 	}
 
-	public [Symbol.iterator](): IterableIterator<[IUri, T]> {
+	public [Symbol.iterator](): IterableIterator<[URI, T]> {
 		return this.entries();
 	}
 }

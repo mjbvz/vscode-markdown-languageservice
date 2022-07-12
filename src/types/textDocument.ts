@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IPosition } from './position';
-import { IRange, makeRange } from './range';
+import { Position, Range } from 'vscode-languageserver-types';
+import { makeRange } from './range';
 
 /**
  * Minimal version of `vscode.TextDocument`.
@@ -14,8 +14,8 @@ export interface ITextDocument {
 	readonly version: number;
 	readonly lineCount: number;
 
-	getText(range?: IRange): string;
-	positionAt(offset: number): IPosition;
+	getText(range?: Range): string;
+	positionAt(offset: number): Position;
 }
 
 export function getLine(doc: ITextDocument, line: number): string {

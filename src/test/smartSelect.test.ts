@@ -6,15 +6,16 @@
 import * as assert from 'assert';
 import { CancellationTokenSource } from 'vscode-languageserver';
 import * as lsp from 'vscode-languageserver-types';
+import { Position } from 'vscode-languageserver-types';
 import { URI } from 'vscode-uri';
 import { InMemoryDocument } from '../inMemoryDocument';
 import { MdSelectionRangeProvider } from '../languageFeatures/smartSelect';
 import { MdTableOfContentsProvider } from '../tableOfContents';
-import { IPosition, makePosition } from '../types/position';
 import { createNewMarkdownEngine } from './engine';
 import { InMemoryWorkspace } from './inMemoryWorkspace';
 import { nulLogger } from './nulLogging';
 import { CURSOR, getCursorPositions, joinLines } from './util';
+
 
 const testFileName = URI.file('test.md');
 
@@ -196,7 +197,7 @@ suite('markdown.SmartSelect', () => {
 	});
 
 	test('Smart select empty document', async () => {
-		const ranges = await getSelectionRangesForDocument(``, [makePosition(0, 0)]);
+		const ranges = await getSelectionRangesForDocument(``, [{ line: 0, character: 0 }]);
 		assert.strictEqual(ranges!.length, 0);
 	});
 
@@ -724,7 +725,7 @@ function assertLineNumbersEqual(selectionRange: lsp.SelectionRange, startLine: n
 	assert.strictEqual(selectionRange.range.end.line, endLine, `failed on end line ${message}`);
 }
 
-function getSelectionRangesForDocument(contents: string, pos?: IPosition[]): Promise<lsp.SelectionRange[] | undefined> {
+function getSelectionRangesForDocument(contents: string, pos?: Position[]): Promise<lsp.SelectionRange[] | undefined> {
 	const doc = new InMemoryDocument(testFileName, contents);
 	const workspace = new InMemoryWorkspace([doc]);
 	const engine = createNewMarkdownEngine();

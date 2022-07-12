@@ -8,7 +8,6 @@ import * as path from 'path';
 import { Emitter } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 import { ITextDocument } from '../types/textDocument';
-import { IUri } from '../types/uri';
 import { Disposable } from '../util/dispose';
 import { ResourceMap } from '../util/resourceMap';
 import { IWorkspace } from '../workspace';
@@ -32,19 +31,19 @@ export class InMemoryWorkspace extends Disposable implements IWorkspace {
 		return this.values();
 	}
 
-	public async getOrLoadMarkdownDocument(resource: IUri): Promise<ITextDocument | undefined> {
+	public async getOrLoadMarkdownDocument(resource: URI): Promise<ITextDocument | undefined> {
 		return this._documents.get(resource);
 	}
 
-	public hasMarkdownDocument(resolvedHrefPath: IUri): boolean {
+	public hasMarkdownDocument(resolvedHrefPath: URI): boolean {
 		return this._documents.has(resolvedHrefPath);
 	}
 
-	public async pathExists(resource: IUri): Promise<boolean> {
+	public async pathExists(resource: URI): Promise<boolean> {
 		return this._documents.has(resource);
 	}
 
-	public async readDirectory(resource: IUri): Promise<[string, { isDir: boolean }][]> {
+	public async readDirectory(resource: URI): Promise<[string, { isDir: boolean }][]> {
 		const files = new Map<string, { isDir: boolean }>();
 		const pathPrefix = resource.fsPath + (resource.fsPath.endsWith('/') || resource.fsPath.endsWith('\\') ? '' : path.sep);
 		for (const doc of this._documents.values()) {
@@ -63,7 +62,7 @@ export class InMemoryWorkspace extends Disposable implements IWorkspace {
 	private readonly _onDidCreateMarkdownDocumentEmitter = this._register(new Emitter<ITextDocument>());
 	public onDidCreateMarkdownDocument = this._onDidCreateMarkdownDocumentEmitter.event;
 
-	private readonly _onDidDeleteMarkdownDocumentEmitter = this._register(new Emitter<IUri>());
+	private readonly _onDidDeleteMarkdownDocumentEmitter = this._register(new Emitter<URI>());
 	public onDidDeleteMarkdownDocument = this._onDidDeleteMarkdownDocumentEmitter.event;
 
 	public updateDocument(document: ITextDocument) {
@@ -78,7 +77,7 @@ export class InMemoryWorkspace extends Disposable implements IWorkspace {
 		this._onDidCreateMarkdownDocumentEmitter.fire(document);
 	}
 
-	public deleteDocument(resource: IUri) {
+	public deleteDocument(resource: URI) {
 		this._documents.delete(resource);
 		this._onDidDeleteMarkdownDocumentEmitter.fire(resource);
 	}

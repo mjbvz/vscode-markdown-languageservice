@@ -1,6 +1,10 @@
 {
 	"compilerOptions": {
 		"target": "es2020",
+		"lib": [
+			"ES2020",
+			"DOM"
+		],
 		"rootDir": "./src",
 		"outDir": "./out",
 		"declaration": true,

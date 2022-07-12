@@ -4,11 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 import { CancellationToken } from 'vscode-languageserver';
 import * as lsp from 'vscode-languageserver-types';
+import { Position, Range } from 'vscode-languageserver-types';
 import { ILogger } from '../logging';
 import { IMdParser, Token, TokenWithMap } from '../parser';
 import { MdTableOfContentsProvider, TocEntry } from '../tableOfContents';
-import { IPosition, translatePosition } from '../types/position';
-import { areRangesEqual, IRange, makeRange, modifyRange, rangeContains } from '../types/range';
+import { translatePosition } from '../types/position';
+import { areRangesEqual, makeRange, modifyRange, rangeContains } from '../types/range';
 import { getLine, ITextDocument } from '../types/textDocument';
 import { isEmptyOrWhitespace } from '../util/string';
 
@@ -20,7 +21,7 @@ export class MdSelectionRangeProvider {
 		private readonly logger: ILogger,
 	) { }
 
-	public async provideSelectionRanges(document: ITextDocument, positions: IPosition[], _token: CancellationToken): Promise<lsp.SelectionRange[] | undefined> {
+	public async provideSelectionRanges(document: ITextDocument, positions: Position[], _token: CancellationToken): Promise<lsp.SelectionRange[] | undefined> {
 		this.logger.verbose('MdSelectionRangeProvider', `provideSelectionRanges - ${document.uri}`);
 
 		const promises = await Promise.all(positions.map((position) => {
@@ -29,18 +30,18 @@ export class MdSelectionRangeProvider {
 		return promises.filter(item => item !== undefined) as lsp.SelectionRange[];
 	}
 
-	private async provideSelectionRange(document: ITextDocument, position: IPosition): Promise<lsp.SelectionRange | undefined> {
+	private async provideSelectionRange(document: ITextDocument, position: Position): Promise<lsp.SelectionRange | undefined> {
 		const headerRange = await this.getHeaderSelectionRange(document, position);
 		const blockRange = await this.getBlockSelectionRange(document, position, headerRange);
 		const inlineRange = await this.getInlineSelectionRange(document, position, blockRange);
 		return inlineRange || blockRange || headerRange;
 	}
 
-	private async getInlineSelectionRange(document: ITextDocument, position: IPosition, blockRange?: lsp.SelectionRange): Promise<lsp.SelectionRange | undefined> {
+	private async getInlineSelectionRange(document: ITextDocument, position: Position, blockRange?: lsp.SelectionRange): Promise<lsp.SelectionRange | undefined> {
 		return createInlineRange(document, position, blockRange);
 	}
 
-	private async getBlockSelectionRange(document: ITextDocument, position: IPosition, headerRange?: lsp.SelectionRange): Promise<lsp.SelectionRange | undefined> {
+	private async getBlockSelectionRange(document: ITextDocument, position: Position, headerRange?: lsp.SelectionRange): Promise<lsp.SelectionRange | undefined> {
 		const tokens = await this.parser.tokenize(document);
 		const blockTokens = getBlockTokensForPosition(tokens, position, headerRange);
 
@@ -56,7 +57,7 @@ export class MdSelectionRangeProvider {
 		return currentRange;
 	}
 
-	private async getHeaderSelectionRange(document: ITextDocument, position: IPosition): Promise<lsp.SelectionRange | undefined> {
+	private async getHeaderSelectionRange(document: ITextDocument, position: Position): Promise<lsp.SelectionRange | undefined> {
 		const toc = await this.tocProvider.getForDocument(document);
 
 		const headerInfo = getHeadersForPosition(toc.entries, position);
@@ -72,7 +73,7 @@ export class MdSelectionRangeProvider {
 	}
 }
 
-function getHeadersForPosition(toc: readonly TocEntry[], position: IPosition): { headers: TocEntry[]; headerOnThisLine: boolean } {
+function getHeadersForPosition(toc: readonly TocEntry[], position: Position): { headers: TocEntry[]; headerOnThisLine: boolean } {
 	const enclosingHeaders = toc.filter(header => header.sectionLocation.range.start.line <= position.line && header.sectionLocation.range.end.line >= position.line);
 	const sortedHeaders = enclosingHeaders.sort((header1, header2) => (header1.line - position.line) - (header2.line - position.line));
 	const onThisLine = toc.find(header => header.line === position.line) !== undefined;
@@ -82,7 +83,7 @@ function getHeadersForPosition(toc: readonly TocEntry[], position: IPosition): {
 	};
 }
 
-function createHeaderRange(header: TocEntry, isClosestHeaderToPosition: boolean, onHeaderLine: boolean, parent?: lsp.SelectionRange, startOfChildRange?: IPosition): lsp.SelectionRange | undefined {
+function createHeaderRange(header: TocEntry, isClosestHeaderToPosition: boolean, onHeaderLine: boolean, parent?: lsp.SelectionRange, startOfChildRange?: Position): lsp.SelectionRange | undefined {
 	const range = header.sectionLocation.range;
 	const contentRange = makeRange(translatePosition(range.start, { lineDelta: 1 }), range.end);
 	if (onHeaderLine && isClosestHeaderToPosition && startOfChildRange) {
@@ -103,7 +104,7 @@ function createHeaderRange(header: TocEntry, isClosestHeaderToPosition: boolean,
 }
 
 
-function getBlockTokensForPosition(tokens: Token[], position: IPosition, parent?: lsp.SelectionRange): TokenWithMap[] {
+function getBlockTokensForPosition(tokens: Token[], position: Position, parent?: lsp.SelectionRange): TokenWithMap[] {
 	const enclosingTokens = tokens.filter((token): token is TokenWithMap => !!token.map && (token.map[0] <= position.line && token.map[1] > position.line) && (!parent || (token.map[0] >= parent.range.start.line && token.map[1] <= parent.range.end.line + 1)) && isBlockElement(token));
 	if (enclosingTokens.length === 0) {
 		return [];
@@ -134,7 +135,7 @@ function createBlockRange(block: TokenWithMap, document: ITextDocument, cursorLi
 	}
 }
 
-function createInlineRange(document: ITextDocument, cursorPosition: IPosition, parent?: lsp.SelectionRange): lsp.SelectionRange | undefined {
+function createInlineRange(document: ITextDocument, cursorPosition: Position, parent?: lsp.SelectionRange): lsp.SelectionRange | undefined {
 	const lineText = getLine(document, cursorPosition.line);
 	const boldSelection = createBoldRange(lineText, cursorPosition.character, cursorPosition.line, parent);
 	const italicSelection = createOtherInlineRange(lineText, cursorPosition.character, cursorPosition.line, true, parent);
@@ -241,8 +242,8 @@ function isBlockElement(token: Token): boolean {
 	return !['list_item_close', 'paragraph_close', 'bullet_list_close', 'inline', 'heading_close', 'heading_open'].includes(token.type);
 }
 
-function getFirstChildHeader(document: ITextDocument, header?: TocEntry, toc?: readonly TocEntry[]): IPosition | undefined {
-	let childRange: IPosition | undefined;
+function getFirstChildHeader(document: ITextDocument, header?: TocEntry, toc?: readonly TocEntry[]): Position | undefined {
+	let childRange: Position | undefined;
 	if (header && toc) {
 		const children = toc.filter(t => rangeContains(header.sectionLocation.range, t.sectionLocation.range) && t.sectionLocation.range.start.line > header.sectionLocation.range.start.line).sort((t1, t2) => t1.line - t2.line);
 		if (children.length > 0) {
@@ -254,6 +255,6 @@ function getFirstChildHeader(document: ITextDocument, header?: TocEntry, toc?: r
 	return undefined;
 }
 
-function makeSelectionRange(range: IRange, parent: lsp.SelectionRange | undefined): lsp.SelectionRange {
+function makeSelectionRange(range: Range, parent: lsp.SelectionRange | undefined): lsp.SelectionRange {
 	return { range, parent };
 }

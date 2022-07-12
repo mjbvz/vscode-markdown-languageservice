@@ -6,7 +6,6 @@
 import * as lsp from 'vscode-languageserver-types';
 import { ILogger } from '../logging';
 import { MdTableOfContentsProvider, TocEntry } from '../tableOfContents';
-import { toLspLocation } from '../types/location';
 import { ITextDocument } from '../types/textDocument';
 
 interface MarkdownSymbol {
@@ -59,7 +58,7 @@ export class MdDocumentSymbolProvider {
 		return {
 			name: this.getSymbolName(entry),
 			kind: lsp.SymbolKind.String,
-			location: toLspLocation(entry.sectionLocation)
+			location: entry.sectionLocation
 		};
 	}
 

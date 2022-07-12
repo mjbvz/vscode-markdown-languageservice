@@ -4,21 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { IPosition, makePosition } from './types/position';
-import { IRange } from './types/range';
+import { Position, Range } from 'vscode-languageserver-types';
+import { URI } from 'vscode-uri';
 import { ITextDocument } from './types/textDocument';
-import { IUri } from './types/uri';
 
 export class InMemoryDocument implements ITextDocument {
 
 	private readonly _doc: TextDocument;
 
-	private lines: string[] | undefined;
-
 	public readonly uri: string;
 
 	constructor(
-		uri: IUri,
+		uri: URI,
 		contents: string,
 		public readonly version = 0,
 	) {
@@ -31,19 +28,11 @@ export class InMemoryDocument implements ITextDocument {
 		return this._doc.lineCount;
 	}
 
-	lineAt(index: any): string {
-		if (!this.lines) {
-			this.lines = this._doc.getText().split(/\r?\n/);
-		}
-		return this.lines[index];
+	positionAt(offset: number): Position {
+		return this._doc.positionAt(offset);
 	}
 
-	positionAt(offset: number): IPosition {
-		const pos = this._doc.positionAt(offset);
-		return makePosition(pos.line, pos.character);
-	}
-
-	getText(range?: IRange): string {
+	getText(range?: Range): string {
 		return this._doc.getText(range);
 	}
 }

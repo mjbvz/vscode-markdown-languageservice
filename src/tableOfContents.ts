@@ -3,15 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as lsp from 'vscode-languageserver-types';
 import { URI } from 'vscode-uri';
 import { ILogger } from './logging';
 import { IMdParser } from './parser';
 import { githubSlugifier, ISlugifier, Slug } from './slugify';
-import { ILocation, makeLocation } from './types/location';
-import { makePosition } from './types/position';
 import { makeRange } from './types/range';
 import { getLine, ITextDocument } from './types/textDocument';
-import { IUri } from './types/uri';
 import { Disposable } from './util/dispose';
 import { IWorkspace } from './workspace';
 import { MdDocumentInfoCache } from './workspaceCache';
@@ -35,7 +33,7 @@ export interface TocEntry {
 	 *
 	 * This is the range from `# Head #` to `# Next head #`
 	 */
-	readonly sectionLocation: ILocation;
+	readonly sectionLocation: lsp.Location;
 
 	/**
 	 * The range of the header declaration.
@@ -49,7 +47,7 @@ export interface TocEntry {
 	 *
 	 * This is the range of `# Head #`
 	 */
-	readonly headerLocation: ILocation;
+	readonly headerLocation: lsp.Location;
 
 	/**
 	 * The range of the header text.
@@ -63,7 +61,7 @@ export interface TocEntry {
 	 *
 	 * This is the range of `Head`
 	 */
-	readonly headerTextLocation: ILocation;
+	readonly headerTextLocation: lsp.Location;
 }
 
 export class TableOfContents {
@@ -98,11 +96,15 @@ export class TableOfContents {
 				existingSlugEntries.set(slug.value, { count: 0 });
 			}
 
-			const headerLocation = makeLocation(docUri,
-				makeRange(lineNumber, 0, lineNumber, line.length));
+			const headerLocation: lsp.Location = {
+				uri: docUri.toString(),
+				range: makeRange(lineNumber, 0, lineNumber, line.length)
+			};
 
-			const headerTextLocation = makeLocation(docUri,
-				makeRange(lineNumber, line.match(/^#+\s*/)?.[0].length ?? 0, lineNumber, line.length - (line.match(/\s*#*$/)?.[0].length ?? 0)));
+			const headerTextLocation: lsp.Location = {
+				uri: docUri.toString(),
+				range: makeRange(lineNumber, line.match(/^#+\s*/)?.[0].length ?? 0, lineNumber, line.length - (line.match(/\s*#*$/)?.[0].length ?? 0))
+			};
 
 			toc.push({
 				slug,
@@ -127,10 +129,12 @@ export class TableOfContents {
 			const endLine = end ?? document.lineCount - 1;
 			return {
 				...entry,
-				sectionLocation: makeLocation(docUri,
-					makeRange(
+				sectionLocation: {
+					uri: docUri.toString(),
+					range: makeRange(
 						entry.sectionLocation.range.start,
-						makePosition(endLine, getLine(document, endLine).length)))
+						{ line: endLine, character: getLine(document, endLine).length })
+				}
 			};
 		});
 	}
@@ -179,7 +183,7 @@ export class MdTableOfContentsProvider extends Disposable {
 		}));
 	}
 
-	public async get(resource: IUri): Promise<TableOfContents> {
+	public async get(resource: URI): Promise<TableOfContents> {
 		return await this._cache.get(resource) ?? TableOfContents.empty;
 	}
 

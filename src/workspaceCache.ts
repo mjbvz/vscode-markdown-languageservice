@@ -5,7 +5,6 @@
 
 import { URI } from 'vscode-uri';
 import { ITextDocument } from './types/textDocument';
-import { IUri } from './types/uri';
 import { Disposable } from './util/dispose';
 import { lazy, Lazy } from './util/lazy';
 import { ResourceMap } from './util/resourceMap';
@@ -15,23 +14,23 @@ import { IWorkspace } from './workspace';
 class LazyResourceMap<T> {
 	private readonly _map = new ResourceMap<Lazy<Promise<T>>>();
 
-	public has(resource: IUri): boolean {
+	public has(resource: URI): boolean {
 		return this._map.has(resource);
 	}
 
-	public get(resource: IUri): Promise<T> | undefined {
+	public get(resource: URI): Promise<T> | undefined {
 		return this._map.get(resource)?.value;
 	}
 
-	public set(resource: IUri, value: Lazy<Promise<T>>) {
+	public set(resource: URI, value: Lazy<Promise<T>>) {
 		this._map.set(resource, value);
 	}
 
-	public delete(resource: IUri) {
+	public delete(resource: URI) {
 		this._map.delete(resource);
 	}
 
-	public entries(): Promise<Array<[IUri, T]>> {
+	public entries(): Promise<Array<[URI, T]>> {
 		return Promise.all(Array.from(this._map.entries(), async ([key, entry]) => {
 			return [key, await entry.value];
 		}));
@@ -58,7 +57,7 @@ export class MdDocumentInfoCache<T> extends Disposable {
 		this._register(this.workspace.onDidDeleteMarkdownDocument(this.onDidDeleteDocument, this));
 	}
 
-	public async get(resource: IUri): Promise<T | undefined> {
+	public async get(resource: URI): Promise<T | undefined> {
 		let existing = this._cache.get(resource);
 		if (existing) {
 			return existing;
@@ -86,7 +85,7 @@ export class MdDocumentInfoCache<T> extends Disposable {
 		return this.resetEntry(document).value;
 	}
 
-	private loadDocument(resource: IUri): Promise<ITextDocument | undefined> {
+	private loadDocument(resource: URI): Promise<ITextDocument | undefined> {
 		const existing = this._loadingDocuments.get(resource);
 		if (existing) {
 			return existing;
@@ -112,7 +111,7 @@ export class MdDocumentInfoCache<T> extends Disposable {
 		}
 	}
 
-	private onDidDeleteDocument(resource: IUri) {
+	private onDidDeleteDocument(resource: URI) {
 		this._cache.delete(resource);
 	}
 }
@@ -135,7 +134,7 @@ export class MdWorkspaceInfoCache<T> extends Disposable {
 		super();
 	}
 
-	public async entries(): Promise<Array<[IUri, T]>> {
+	public async entries(): Promise<Array<[URI, T]>> {
 		await this.ensureInit();
 		return this._cache.entries();
 	}
@@ -183,7 +182,7 @@ export class MdWorkspaceInfoCache<T> extends Disposable {
 		this.update(document);
 	}
 
-	private onDidDeleteDocument(resource: IUri) {
+	private onDidDeleteDocument(resource: URI) {
 		this._cache.delete(resource);
 	}
 }

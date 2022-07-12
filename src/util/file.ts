@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as URI from 'vscode-uri';
-import { IUri } from '../types/uri';
 
 const markdownFileExtensions = Object.freeze<string[]>([
 	'.md',
@@ -18,6 +17,6 @@ const markdownFileExtensions = Object.freeze<string[]>([
 	'.workbook',
 ]);
 
-export function looksLikeMarkdownPath(resolvedHrefPath: IUri) {
-	return markdownFileExtensions.includes(URI.Utils.extname(URI.URI.from(resolvedHrefPath)).toLowerCase());
+export function looksLikeMarkdownPath(resolvedHrefPath: URI.URI) {
+	return markdownFileExtensions.includes(URI.Utils.extname(resolvedHrefPath).toLowerCase());
 }

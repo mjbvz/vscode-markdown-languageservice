@@ -8,18 +8,19 @@ import * as lsp from 'vscode-languageserver-types';
 import { MdDocumentSymbolProvider } from './languageFeatures/documentSymbols';
 import { MdFoldingProvider } from './languageFeatures/folding';
 import { MdSelectionRangeProvider } from './languageFeatures/smartSelect';
+import { MdWorkspaceSymbolProvider } from './languageFeatures/workspaceSymbols';
 import { ILogger } from './logging';
 import { IMdParser } from './parser';
 import { MdTableOfContentsProvider } from './tableOfContents';
 import { ITextDocument } from './types/textDocument';
 import { IWorkspace } from './workspace';
 
+export { InMemoryDocument } from './inMemoryDocument';
 export { ILogger } from './logging';
 export { IMdParser, Token } from './parser';
 export { githubSlugifier, ISlugifier } from './slugify';
 export { ITextDocument } from './types/textDocument';
-export { IWorkspace as IMdWorkspace } from './workspace';
-
+export { IWorkspace } from './workspace';
 
 // Language service
 
@@ -29,13 +30,22 @@ export interface IMdLanguageService {
 	provideFoldingRanges(document: ITextDocument, token: CancellationToken): Promise<lsp.FoldingRange[]>;
 
 	provideSelectionRanges(document: ITextDocument, positions: lsp.Position[], token: CancellationToken): Promise<lsp.SelectionRange[] | undefined>;
+
+	provideWorkspaceSymbols(query: string, token: CancellationToken): Promise<lsp.WorkspaceSymbol[]>;
 }
 
-export function createLanguageService(workspace: IWorkspace, parser: IMdParser, logger: ILogger): IMdLanguageService {
-	const tocProvider = new MdTableOfContentsProvider(parser, workspace, logger);
-	const docSymbolProvider = new MdDocumentSymbolProvider(tocProvider, logger);
-	const smartSelectProvider = new MdSelectionRangeProvider(parser, tocProvider, logger);
-	const foldingProvider = new MdFoldingProvider(parser, tocProvider, logger);
+export interface LanguageServiceConfiguration {
+	readonly workspace: IWorkspace;
+	readonly parser: IMdParser;
+	readonly logger: ILogger
+}
+
+export function createLanguageService(config: LanguageServiceConfiguration): IMdLanguageService {
+	const tocProvider = new MdTableOfContentsProvider(config.parser, config.workspace, config.logger);
+	const docSymbolProvider = new MdDocumentSymbolProvider(tocProvider, config.logger);
+	const smartSelectProvider = new MdSelectionRangeProvider(config.parser, tocProvider, config.logger);
+	const foldingProvider = new MdFoldingProvider(config.parser, tocProvider, config.logger);
+	const workspaceSymbolProvider = new MdWorkspaceSymbolProvider(config.workspace, docSymbolProvider);
 
 	return Object.freeze<IMdLanguageService>({
 		provideDocumentSymbols(document, _token) {
@@ -46,6 +56,9 @@ export function createLanguageService(workspace: IWorkspace, parser: IMdParser, 
 		},
 		provideSelectionRanges(document: ITextDocument, positions: lsp.Position[], token: CancellationToken): Promise<lsp.SelectionRange[] | undefined> {
 			return smartSelectProvider.provideSelectionRanges(document, positions, token);
+		},
+		provideWorkspaceSymbols(query: string, token: CancellationToken): Promise<lsp.WorkspaceSymbol[]> {
+			return workspaceSymbolProvider.provideWorkspaceSymbols(query, token);
 		}
 	});
 }

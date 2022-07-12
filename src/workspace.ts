@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from './types/event';
+import { Event } from 'vscode-languageserver';
 import { ITextDocument } from './types/textDocument';
-import { IUri } from './types/uri';
+import { URI } from 'vscode-uri';
 
 /**
  * Provides set of markdown files in the current workspace.
@@ -19,15 +19,15 @@ export interface IWorkspace {
 	/**
 	 * Check if a document already exists in the workspace contents.
 	 */
-	hasMarkdownDocument(resource: IUri): boolean;
+	hasMarkdownDocument(resource: URI): boolean;
 
-	getOrLoadMarkdownDocument(resource: IUri): Promise<ITextDocument | undefined>;
+	getOrLoadMarkdownDocument(resource: URI): Promise<ITextDocument | undefined>;
 
-	pathExists(resource: IUri): Promise<boolean>;
+	// pathExists(resource: URI): Promise<boolean>;
 
-	readDirectory(resource: IUri): Promise<[string, { isDir: boolean }][]>;
+	// readDirectory(resource: URI): Promise<[string, { isDir: boolean }][]>;
 
 	readonly onDidChangeMarkdownDocument: Event<ITextDocument>;
 	readonly onDidCreateMarkdownDocument: Event<ITextDocument>;
-	readonly onDidDeleteMarkdownDocument: Event<IUri>;
+	readonly onDidDeleteMarkdownDocument: Event<URI>;
 }
