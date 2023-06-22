@@ -6,7 +6,7 @@ import * as path from 'path';
 import { CancellationToken } from 'vscode-languageserver';
 import * as lsp from 'vscode-languageserver-types';
 import { URI, Utils } from 'vscode-uri';
-import { isExcludedPath, LsConfiguration, PreferredMdPathExtensionStyleNew } from '../config';
+import { isExcludedPath, LsConfiguration, PreferredMdPathExtensionStyleNew2 } from '../config';
 import { getDocUri, ITextDocument } from '../types/textDocument';
 import { Disposable } from '../util/dispose';
 import { WorkspaceEditBuilder } from '../util/editBuilder';
@@ -261,7 +261,7 @@ export class MdFileRenameProvider extends Disposable {
 			return false;
 		}
 
-		if (this.#config.preferredMdPathExtensionStyle === PreferredMdPathExtensionStyleNew.removeExtension) {
+		if (this.#config.preferredMdPathExtensionStyle === PreferredMdPathExtensionStyleNew2.removeExtension) {
 			return true;
 		}
 
