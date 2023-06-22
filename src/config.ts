@@ -9,7 +9,7 @@ import { URI } from 'vscode-uri';
 /**
  * Preferred style for file paths to {@link markdownFileExtensions markdown files}.
  */
-export enum PreferredMdPathExtensionStyleChange {
+export enum PreferredMdPathExtensionStyleNew {
 	/**
 	 * Try to maintain the existing of the path.
 	 */
@@ -56,7 +56,7 @@ export interface LsConfiguration {
 	 * 
 	 * This is used for paths added by the language service, such as for path completions and on file renames.
 	 */
-	readonly preferredMdPathExtensionStyle?: PreferredMdPathExtensionStyleChange;
+	readonly preferredMdPathExtensionStyle?: PreferredMdPathExtensionStyleNew;
 }
 
 export const defaultMarkdownFileExtension = 'md';
