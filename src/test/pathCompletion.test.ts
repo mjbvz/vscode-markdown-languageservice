@@ -7,7 +7,7 @@ import * as assert from 'assert';
 import * as ls from 'vscode-languageserver';
 import * as lsp from 'vscode-languageserver-types';
 import { URI } from 'vscode-uri';
-import { getLsConfiguration, LsConfiguration, PreferredMdPathExtensionStyle } from '../config';
+import { getLsConfiguration, LsConfiguration, PreferredMdPathExtensionStyleChange } from '../config';
 import { MdLinkProvider } from '../languageFeatures/documentLinks';
 import { IncludeWorkspaceHeaderCompletions, PathCompletionOptions, MdPathCompletionProvider } from '../languageFeatures/pathCompletions';
 import { MdTableOfContentsProvider } from '../tableOfContents';
@@ -373,7 +373,7 @@ suite('Path completions', () => {
 			`[](./${CURSOR}`,
 			``,
 			`# A b C`,
-		), workspace, { preferredMdPathExtensionStyle: PreferredMdPathExtensionStyle.removeExtension });
+		), workspace, { preferredMdPathExtensionStyle: PreferredMdPathExtensionStyleChange.removeExtension });
 
 		assertCompletionsEqual(completions, [
 			{ label: 'a' },
@@ -575,7 +575,7 @@ suite('Path completions', () => {
 
 			const completions = await getCompletionsAtCursorForFileContents(store, workspacePath('sub', 'new.md'), joinLines(
 				`[](##${CURSOR}`,
-			), workspace, { preferredMdPathExtensionStyle: PreferredMdPathExtensionStyle.removeExtension }, { includeWorkspaceHeaderCompletions: IncludeWorkspaceHeaderCompletions.onDoubleHash });
+			), workspace, { preferredMdPathExtensionStyle: PreferredMdPathExtensionStyleChange.removeExtension }, { includeWorkspaceHeaderCompletions: IncludeWorkspaceHeaderCompletions.onDoubleHash });
 
 			assertCompletionsEqual(completions, [
 				{ label: '#a-b-c', insertText: '../a#a-b-c' },
